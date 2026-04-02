@@ -7,6 +7,143 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+- a user should be able to all CRUD actions related to a pet
+- a user should be able to manage tasks related to a pet
+- a user should be able track the general health of a pet
+
+### classes
+
+    class:Pet
+    attributes:
+        name
+        age/DOB
+        breed
+        physical characteristics
+        allergies
+
+    methods:
+        add_pet_Info
+        update_pet_Info
+        delete_pet
+        get_pet_Info
+        create_report
+        filter_by(criteria)
+
+    
+    class: Task
+    attributes:
+        task_title
+        description
+        date
+        time
+        
+
+    methods:
+        add_task
+        update_task
+        delete_task
+        get_task
+        get_task_by_date
+        get_task_by_pet
+        remind_task
+        group_similar_task
+
+
+
+    class: Food
+    attributes:
+        food_type
+        brand name
+        manufacture date
+        nutrition
+
+    methods:
+        add_food_info
+        get_food_Info
+        update_fod_Info
+        delete_food_Info
+        fitlert_by(criteria)
+    
+
+   class: Appointment
+
+   attributes:
+        appointment_title
+        appointment_date_time
+        place
+        appointment_person
+   
+   methods:
+        add_apointment
+        update_appointment
+        delete_appointment
+        get_appointment
+        get_appointment_dates
+
+
+
+**Mermaid.js Class Diagram**
+
+```mermaid
+classDiagram
+    class Pet {
+        +String name
+        +String breed
+        +Date dob
+        +String physicalCharacteristics
+        +List~String~ allergies
+        +add_pet_info()
+        +update_pet_info()
+        +delete_pet()
+        +get_pet_info()
+        +create_report()
+        +filter_by(criteria)
+    }
+
+    class Task {
+        +String taskTitle
+        +String description
+        +Date date
+        +Time time
+        +add_task()
+        +update_task()
+        +delete_task()
+        +get_task()
+        +get_task_by_date()
+        +get_task_by_pet()
+        +remind_task()
+        +group_similar_tasks()
+    }
+
+    class Food {
+        +String foodType
+        +String brandName
+        +Date manufactureDate
+        +String nutrition
+        +add_food_info()
+        +get_food_info()
+        +update_food_info()
+        +delete_food_info()
+        +filter_by(criteria)
+    }
+
+    class Appointment {
+        +String appointmentTitle
+        +DateTime appointmentDateTime
+        +String place
+        +String appointmentPerson
+        +add_appointment()
+        +update_appointment()
+        +delete_appointment()
+        +get_appointment()
+        +get_appointment_dates()
+    }
+
+    Pet "1" --> "many" Task : has
+    Pet "1" --> "many" Food : eats
+    Pet "1" --> "many" Appointment : schedules
+```
+
 **b. Design changes**
 
 - Did your design change during implementation?
