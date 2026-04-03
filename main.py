@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime
 from pawpal_system import Appointment, Owner, Pet, Scheduler, Task
 
 today = date.today()
@@ -11,8 +11,7 @@ print("=== Task ===")
 morning_walk = Task(
     task_title="Morning Walk",
     description="30-minute walk around the park",
-    date=today,
-    scheduled_time=time(7, 0),
+    scheduled_datetime=datetime(today.year, today.month, today.day, 7, 0),
     priority="high",
     frequency="daily",
     duration_minutes=30,
@@ -21,8 +20,7 @@ morning_walk = Task(
 feeding = Task(
     task_title="Feeding",
     description="Serve 1 cup of dry kibble",
-    date=today,
-    scheduled_time=time(8, 0),
+    scheduled_datetime=datetime(today.year, today.month, today.day, 8, 0),
     priority="high",
     frequency="daily",
     duration_minutes=10,
@@ -31,8 +29,7 @@ feeding = Task(
 grooming = Task(
     task_title="Grooming",
     description="Brush coat and clean ears",
-    date=today,
-    scheduled_time=time(17, 0),
+    scheduled_datetime=datetime(today.year, today.month, today.day, 17, 0),
     priority="medium",
     frequency="weekly",
     duration_minutes=20,

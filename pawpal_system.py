@@ -79,8 +79,7 @@ class Appointment:
 class Task:
     task_title: str
     description: str
-    date: date
-    scheduled_time: time
+    scheduled_datetime: datetime
     pet_name: str = ""
     duration_minutes: int = 30
     priority: str = "medium"       # "low" | "medium" | "high"
@@ -92,8 +91,7 @@ class Task:
         return {
             "title": self.task_title,
             "description": self.description,
-            "date": self.date,
-            "time": self.scheduled_time,
+            "datetime": self.scheduled_datetime,
             "pet": self.pet_name,
             "duration_minutes": self.duration_minutes,
             "priority": self.priority,
@@ -116,14 +114,14 @@ class Task:
         status = "DONE" if self.completed else "PENDING"
         return (
             f"[{status}] Reminder: '{self.task_title}' for {self.pet_name} "
-            f"on {self.date} at {self.scheduled_time.strftime('%H:%M')} "
+            f"on {self.scheduled_datetime.strftime('%Y-%m-%d at %H:%M')} "
             f"({self.duration_minutes} min, {self.priority} priority)"
         )
 
     @staticmethod
     def get_task_by_date(tasks: List["Task"], target_date: date) -> List["Task"]:
         """Return only the tasks whose date matches target_date."""
-        return [t for t in tasks if t.date == target_date]
+        return [t for t in tasks if t.scheduled_datetime.date() == target_date]
 
     @staticmethod
     def get_task_by_pet(tasks: List["Task"], pet_name: str) -> List["Task"]:
@@ -314,6 +312,10 @@ class Scheduler:
         ]
 
     # --- Scheduling (core logic) ---
+    def sort_by_time(self, tasks: List[Task]) -> List[Task]:
+        """Return tasks sorted by scheduled_datetime using 'HH:MM' string comparison."""
+        return sorted(tasks, key=lambda t: t.scheduled_datetime.strftime("%H:%M"))
+
     def build_daily_schedule(self, pet_name: str, target_date: date) -> List[Task]:
         """Return tasks for a pet on a given day, sorted by priority then time."""
         pet_tasks = Task.get_task_by_pet(
@@ -321,7 +323,7 @@ class Scheduler:
         )
         return sorted(
             pet_tasks,
-            key=lambda t: (_PRIORITY_ORDER.get(t.priority, 1), t.scheduled_time),
+            key=lambda t: (_PRIORITY_ORDER.get(t.priority, 1), t.scheduled_datetime),
         )
 
     def explain_schedule(self, schedule: List[Task]) -> str:
@@ -329,11 +331,11 @@ class Scheduler:
         if not schedule:
             return "No tasks scheduled."
         pet = schedule[0].pet_name
-        lines = [f"Daily schedule for {pet} ({schedule[0].date}):"]
+        lines = [f"Daily schedule for {pet} ({schedule[0].scheduled_datetime.date()}):"]
         for task in schedule:
             status = "✓" if task.completed else "○"
             lines.append(
-                f"  {status} {task.scheduled_time.strftime('%H:%M')} "
+                f"  {status} {task.scheduled_datetime.strftime('%H:%M')} "
                 f"[{task.priority.upper()}] {task.task_title} "
                 f"({task.duration_minutes} min) — {task.description}"
             )

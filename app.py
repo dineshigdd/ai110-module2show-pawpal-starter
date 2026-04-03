@@ -76,8 +76,7 @@ if st.button("Create pet and owner"):
             default_task = Task(
                 task_title="Morning walk",
                 description="",
-                date=date.today(),
-                scheduled_time=time(8, 0),
+                scheduled_datetime=datetime.combine(date.today(), time(8, 0)),
                 duration_minutes=20,
                 priority="high",
             )
@@ -115,8 +114,7 @@ if st.button("Add task"):
     new_task = Task(
         task_title=task_title,
         description="",
-        date=date.today(),
-        scheduled_time=time(0, 0),
+        scheduled_datetime=datetime.combine(date.today(), time(0, 0)),
         duration_minutes=int(duration),
         priority=priority,
     )
@@ -200,8 +198,7 @@ if st.button("Generate schedule"):
             t = Task(
                 task_title=task_dict["task_title"],
                 description="",
-                date=sched_date,
-                scheduled_time=time(slot_hour, slot_min),
+                scheduled_datetime=datetime.combine(sched_date, time(slot_hour, slot_min)),
                 duration_minutes=task_dict["duration_minutes"],
                 priority=task_dict["priority"],
                 pet_name=sched_pet,
