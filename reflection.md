@@ -184,12 +184,42 @@ Two changes are made to establish relationship between classes , these changes w
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+constaints of the schedular
+    - Temporal Constraints (Time & Duration)
+        - Chronological Sequence:
+            - sort_by_time method
+            - build_daily_schedule method
+        - conflict deletection
+            - detect_conflicts method
+        - Recurrence Logic
+            - mark_task_complete method
+
+    - Priority Constraints (Importance)
+        Ranked by using the _PRIORITY_ORDER dictionar. The scheduler shows "High" priority tasks at the top of a daily list, even if a "Low" priority task is scheduled for an earlier time.
+    - Relational & Scope Constraints
+        Define "who belongs to whom" so data doesn't leak between different pets or owners.
+        - Pet Attribution(Pet Class )
+            - add_task method
+            - add_appointment method
+        - Owner Boundaries
+            The Owner class acts as a container constraint. For example, calling get_all_tasks method, the scheduler is restricted to only pulling data from the specific list of pets assigned to that one owner.
+    - Status Constraints (Lifecycle)
+        For example, in methods such as detect_conflicts and create_report, the scheduler distinguishes between completed and pending states. It ignores "Done" tasks when checking for time conflicts, as finished tasks no longer take up "active" time.
+
 - How did you decide which constraints mattered most?
+    I prioritized Temporal and Priority Constraints because they address the two biggest challenges of multi-pet ownership: feasibility (completing tasks successfully) and focus (knowing what matters most).
+
+    Priority Constraints matter most becasue this hierarchy ensures that crtical task, such as medication, are prioritized over routine tasks like grooming.
+    
+    Temporal Constraints (specifically conflict detection) are essential for feasibility; a schedule is only useful if it is physically possible to complete. By checking for overlaps using duration_minutes, the scheduler moves from being a simple list to a functional planning tool.
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
+    Within the current scope of the scheduler, the sorting logic is designed primarily for organizing tasks within a single given day. Although the program allows users to enter tasks spanning an entire week or month, the current sort_by_time method does not account for the date. Consequently, it cannot sort a multi-day list chronologically by both date and time; it is strictly limited to ordering tasks by their time attributes within a single 24-hour window.
+
 - Why is that tradeoff reasonable for this scenario?
+    This tradeoff is a deliberate design choice intended to prevent information overload. While the system allows for long-term planning, presenting a pet owner with an entire week's worth of tasks at once can be overwhelming. By restricting the sorting logic to a single-day view, the scheduler maintains a high level of focus and clarity,which ensures that the owner only sees the most actionable tasks for the current 24-hour period, rather than being distracted by future obligations that do not require immediate attention.
 
 ---
 

@@ -41,3 +41,19 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+### Smarter Scheduling: Summarizing and New Features
+
+| Class | Primary Responsibility | Key Attributes & Logic |
+| :--- | :--- | :--- |
+| **Appointment** | **Professional Tracking** | Manages vet/groomer visits with `datetime`, `place`, and `person`. |
+| **Task** | **Care Activity** | Represents single events with `priority`, `duration`, and `frequency`. |
+| **Pet** | **Profile Management** | Acts as the data owner for species, breed, allergies, and scheduled tasks. |
+| **Owner** | **User Management** | Manages multiple pets and aggregates tasks across the entire household. |
+| **Scheduler** | **Central Brain** | Executes the core logic for sorting, filtering, and conflict detection. |
+
+#### Conflict Detection (Interval-Based)
+Unlike basic schedulers that only check for exact time matches, PawPal+ uses **Interval-Based Conflict Detection**. By calculating the "time window" of an activity ($Start + Duration = End$), the system identifies overlapping schedules. This ensures that the plan is physically possible for the owner to execute across multiple pets.
+
+#### Strategic Priority & Temporal Constraints
+I prioritized **Temporal and Priority Constraints** because they address the two biggest challenges of multi-pet ownership: **operational feasibility** and **triage focus**. By implementing a weighted sorting system, the scheduler ensures that **high-acuity care** (like medication) is never **obscured** by **standard maintenance workflows** (like grooming).

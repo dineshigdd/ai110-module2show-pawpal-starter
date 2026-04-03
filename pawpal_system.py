@@ -264,6 +264,7 @@ class Scheduler:
     """Central store and manager for owners, pets, tasks, and appointments."""
 
     def __init__(self) -> None:
+        """Initialize the Scheduler with empty lists for owners, pets, tasks, and appointments."""
         self.owners: List[Owner] = []
         self.pets: List[Pet] = []
         self.tasks: List[Task] = []
