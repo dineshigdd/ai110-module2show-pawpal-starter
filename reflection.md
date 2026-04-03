@@ -2,16 +2,18 @@
 
 ## 1. System Design
 
+Three core actions a user should be able to perform 1. User should be able to all CRUD actions related to a pet 2. User should be able to manage tasks related to a pet 3. User should be able track the general health of a pet
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
-
-- a user should be able to all CRUD actions related to a pet
-- a user should be able to manage tasks related to a pet
-- a user should be able track the general health of a pet
+  While this system includes many classes , I have focued on the following 4 classes,their attributes, and methods(responsibilities).
 
 ### classes
+
+    Pet class
+    This class is responsible for the management of data related tpo pets.
 
     class:Pet
     attributes:
@@ -29,14 +31,16 @@
         create_report
         filter_by(criteria)
 
-    
+    Task class
+    This class store and manage information related to tasks assigned to a pet
+
     class: Task
     attributes:
         task_title
         description
         date
         time
-        
+
 
     methods:
         add_task
@@ -49,7 +53,7 @@
         group_similar_task
 
 
-
+    Food class: This class is for managing information related to pet food
     class: Food
     attributes:
         food_type
@@ -63,24 +67,22 @@
         update_fod_Info
         delete_food_Info
         fitlert_by(criteria)
-    
 
-   class: Appointment
+Appointment class:This class manage all the data and actio related to appointments related to pet/pet care
+class: Appointment
 
-   attributes:
-        appointment_title
-        appointment_date_time
-        place
-        appointment_person
-   
-   methods:
-        add_apointment
-        update_appointment
-        delete_appointment
-        get_appointment
-        get_appointment_dates
+attributes:
+appointment_title
+appointment_date_time
+place
+appointment_person
 
-
+methods:
+add_apointment
+update_appointment
+delete_appointment
+get_appointment
+get_appointment_dates
 
 **Mermaid.js Class Diagram**
 
@@ -148,6 +150,32 @@ classDiagram
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+
+There were some changes to the skeleton. I made some changes by myself , however, for adding new classes and other major changes weere made with the assistance of AI.
+
+Two changes are made to establish relationship between classes , these changes were added
+1.  Removed the Food class, and added the Owner class.
+    While the Food class can be added to support FeedingTask or NutritionTracker, I think owner class is core class at this point of system designing. Therefore, I decided to remove the Food class at this stage of designing process.The Food class could be added as the system chanhes due to new requirements.
+
+1. Add pet_name: str as an attribute on Task class
+   Althought the get_task_by_pet(self, pet_name: str) of the Task class takes a str, the Task class has no pet attribute. Therefore it can never actually filter by pet from within the Task class. Thus, the solution is to add pet_name: str as an attribute on Task class.
+
+2. Add pet_name: str to both Food and Appointment.
+   Pet class holds lists of Food and Appointment, however, Food and Appointment classes have no link to Pet class. Therefore, Add pet_name: str (or pet: "Pet") to both Food and Appointment.
+
+#### Some other changes
+
+4. Converted filter*by, get_task_by*\*, group_similar_tasks, get_appointment_dates to @staticmethod — they now take the full list as a paramete
+   Food.filter_by(criteria) is an instance method on a single food object — it can't filter a collection of foods. Same issue on Pet.filter_by.
+   Task.get_task_by_date and get_task_by_pet are instance methods on a single task — they'd need access to all tasks to return a list.
+   These should either be @classmethod / @staticmethod methods, or moved to a separate PawPalScheduler / registry class that holds the full collections.
+
+5. Task.time is typed as str
+   Using a bare str for time makes scheduling logic fragile — comparing or sorting tasks by time will break. Should be datetime.time or combined into a single datetime.
+   Changed to datetime.time, renamed field to scheduled_time to avoid shadowing the time type
+
+6. Added Scheduler class with add/delete methods for all entities, plus build_daily_schedule and explain_schedule stubs
+   This is becasue instance methods such as task.add_task() are unclear with no storage layer (list, DB, etc.) that these methods can operate on. Thus, these methods moved to a manager/scheduler class.
 
 ---
 

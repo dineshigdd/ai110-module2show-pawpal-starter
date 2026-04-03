@@ -1,0 +1,337 @@
+from __future__ import annotations
+from dataclasses import dataclass, field
+from datetime import date, datetime, time
+from typing import List
+
+_PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+
+
+# ---------------------------------------------------------------------------
+# Appointment
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Appointment:
+    appointment_title: str
+    appointment_date_time: datetime
+    place: str
+    appointment_person: str          # e.g. vet name, groomer name
+    pet_name: str = ""
+    notes: str = ""
+    completed: bool = False
+
+    def get_appointment(self) -> dict:
+        """Return all appointment details as a dictionary."""
+        return {
+            "title": self.appointment_title,
+            "datetime": self.appointment_date_time,
+            "place": self.place,
+            "person": self.appointment_person,
+            "pet": self.pet_name,
+            "notes": self.notes,
+            "completed": self.completed,
+        }
+
+    def update_appointment(self, **kwargs) -> None:
+        """Update any appointment field by keyword argument."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def mark_complete(self) -> None:
+        """Mark this appointment as completed."""
+        self.completed = True
+
+    def remind_appointment(self) -> str:
+        """Return a formatted reminder string showing status, time, person, and place."""
+        status = "DONE" if self.completed else "UPCOMING"
+        return (
+            f"[{status}] '{self.appointment_title}' for {self.pet_name} "
+            f"on {self.appointment_date_time.strftime('%Y-%m-%d at %H:%M')} "
+            f"with {self.appointment_person} @ {self.place}"
+        )
+
+    @staticmethod
+    def get_appointment_dates(appointments: List["Appointment"]) -> List[datetime]:
+        """Return a list of datetimes for every appointment in the given list."""
+        return [a.appointment_date_time for a in appointments]
+
+    @staticmethod
+    def get_by_pet(appointments: List["Appointment"], pet_name: str) -> List["Appointment"]:
+        """Filter appointments to only those belonging to the named pet."""
+        return [a for a in appointments if a.pet_name == pet_name]
+
+    @staticmethod
+    def get_upcoming(appointments: List["Appointment"], from_date: datetime) -> List["Appointment"]:
+        """Return incomplete appointments on or after from_date, sorted by datetime."""
+        upcoming = [
+            a for a in appointments
+            if not a.completed and a.appointment_date_time >= from_date
+        ]
+        return sorted(upcoming, key=lambda a: a.appointment_date_time)
+
+
+# ---------------------------------------------------------------------------
+# Task — a single care activity
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Task:
+    task_title: str
+    description: str
+    date: date
+    scheduled_time: time
+    pet_name: str = ""
+    duration_minutes: int = 30
+    priority: str = "medium"       # "low" | "medium" | "high"
+    frequency: str = "once"        # "once" | "daily" | "weekly"
+    completed: bool = False
+
+    def get_task(self) -> dict:
+        """Return all task fields as a dictionary."""
+        return {
+            "title": self.task_title,
+            "description": self.description,
+            "date": self.date,
+            "time": self.scheduled_time,
+            "pet": self.pet_name,
+            "duration_minutes": self.duration_minutes,
+            "priority": self.priority,
+            "frequency": self.frequency,
+            "completed": self.completed,
+        }
+
+    def update_task(self, **kwargs) -> None:
+        """Update any task field by keyword argument."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def mark_complete(self) -> None:
+        """Mark this task as completed."""
+        self.completed = True
+
+    def remind_task(self) -> str:
+        """Return a formatted reminder string showing status, time, and priority."""
+        status = "DONE" if self.completed else "PENDING"
+        return (
+            f"[{status}] Reminder: '{self.task_title}' for {self.pet_name} "
+            f"on {self.date} at {self.scheduled_time.strftime('%H:%M')} "
+            f"({self.duration_minutes} min, {self.priority} priority)"
+        )
+
+    @staticmethod
+    def get_task_by_date(tasks: List["Task"], target_date: date) -> List["Task"]:
+        """Return only the tasks whose date matches target_date."""
+        return [t for t in tasks if t.date == target_date]
+
+    @staticmethod
+    def get_task_by_pet(tasks: List["Task"], pet_name: str) -> List["Task"]:
+        """Return only the tasks that belong to the named pet."""
+        return [t for t in tasks if t.pet_name == pet_name]
+
+    @staticmethod
+    def group_similar_tasks(tasks: List["Task"]) -> dict:
+        """Group tasks by normalised title, e.g. all 'walk' tasks together."""
+        groups: dict = {}
+        for task in tasks:
+            key = task.task_title.strip().lower()
+            groups.setdefault(key, []).append(task)
+        return groups
+
+
+# ---------------------------------------------------------------------------
+# Pet — stores pet details and owns a list of tasks
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Pet:
+    name: str
+    breed: str
+    dob: date
+    physical_characteristics: str
+    allergies: List[str] = field(default_factory=list)
+    tasks: List[Task] = field(default_factory=list)
+    appointments: List[Appointment] = field(default_factory=list)
+
+    def get_pet_info(self) -> dict:
+        """Return core pet details and task/appointment counts as a dictionary."""
+        return {
+            "name": self.name,
+            "breed": self.breed,
+            "dob": self.dob,
+            "physical_characteristics": self.physical_characteristics,
+            "allergies": self.allergies,
+            "task_count": len(self.tasks),
+            "appointment_count": len(self.appointments),
+        }
+
+    def update_pet_info(self, **kwargs) -> None:
+        """Update any pet field by keyword argument."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def add_task(self, task: Task) -> None:
+        """Append a task to this pet and set its pet_name back-reference."""
+        task.pet_name = self.name
+        self.tasks.append(task)
+
+    def remove_task(self, task_title: str) -> None:
+        """Remove all tasks whose title matches task_title."""
+        self.tasks = [t for t in self.tasks if t.task_title != task_title]
+
+    def add_appointment(self, appointment: Appointment) -> None:
+        """Append an appointment to this pet and set its pet_name back-reference."""
+        appointment.pet_name = self.name
+        self.appointments.append(appointment)
+
+    def remove_appointment(self, appointment_title: str) -> None:
+        """Remove all appointments whose title matches appointment_title."""
+        self.appointments = [
+            a for a in self.appointments if a.appointment_title != appointment_title
+        ]
+
+    def create_report(self) -> str:
+        """Return a formatted multi-line summary of the pet's details and task counts."""
+        pending = [t for t in self.tasks if not t.completed]
+        done = [t for t in self.tasks if t.completed]
+        lines = [
+            f"=== Pet Report: {self.name} ===",
+            f"  Breed      : {self.breed}",
+            f"  DOB        : {self.dob}",
+            f"  Physical   : {self.physical_characteristics}",
+            f"  Allergies  : {', '.join(self.allergies) if self.allergies else 'None'}",
+            f"  Tasks      : {len(self.tasks)} total | {len(pending)} pending | {len(done)} done",
+            f"  Appointments: {len(self.appointments)}",
+        ]
+        return "\n".join(lines)
+
+    @staticmethod
+    def filter_by(pets: List["Pet"], criteria: dict) -> List["Pet"]:
+        """Return pets where every key in criteria matches the pet's attribute."""
+        result = pets
+        for key, value in criteria.items():
+            result = [p for p in result if getattr(p, key, None) == value]
+        return result
+
+
+# ---------------------------------------------------------------------------
+# Owner — manages multiple pets and exposes all their tasks
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Owner:
+    name: str
+    email: str
+    phone_number: str
+    pets: List[Pet] = field(default_factory=list)
+
+    def get_owner_info(self) -> dict:
+        """Return owner contact details and a list of pet names as a dictionary."""
+        return {
+            "name": self.name,
+            "email": self.email,
+            "phone_number": self.phone_number,
+            "pets": [p.name for p in self.pets],
+        }
+
+    def update_owner_info(self, **kwargs) -> None:
+        """Update any owner field by keyword argument."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def add_pet(self, pet: Pet) -> None:
+        """Add a pet to this owner's pet list."""
+        self.pets.append(pet)
+
+    def remove_pet(self, pet_name: str) -> None:
+        """Remove the pet with the given name from this owner's pet list."""
+        self.pets = [p for p in self.pets if p.name != pet_name]
+
+    def get_all_tasks(self) -> List[Task]:
+        """Flatten tasks from every owned pet into a single list."""
+        return [task for pet in self.pets for task in pet.tasks]
+
+
+# ---------------------------------------------------------------------------
+# Scheduler — the "brain" that organises and manages tasks across all pets
+# ---------------------------------------------------------------------------
+
+class Scheduler:
+    """Central store and manager for owners, pets, tasks, and appointments."""
+
+    def __init__(self) -> None:
+        self.owners: List[Owner] = []
+        self.pets: List[Pet] = []
+        self.tasks: List[Task] = []
+        self.appointments: List[Appointment] = []
+
+    # --- Owner management ---
+    def add_owner(self, owner: Owner) -> None:
+        """Register an owner with the scheduler."""
+        self.owners.append(owner)
+
+    def delete_owner(self, name: str) -> None:
+        """Remove the owner with the given name from the scheduler."""
+        self.owners = [o for o in self.owners if o.name != name]
+
+    # --- Pet management ---
+    def add_pet(self, pet: Pet) -> None:
+        """Register a pet with the scheduler."""
+        self.pets.append(pet)
+
+    def delete_pet(self, pet_name: str) -> None:
+        """Remove the pet with the given name from the scheduler."""
+        self.pets = [p for p in self.pets if p.name != pet_name]
+
+    # --- Task management ---
+    def add_task(self, task: Task) -> None:
+        """Add a task to the scheduler's central task list."""
+        self.tasks.append(task)
+
+    def delete_task(self, task_title: str, pet_name: str) -> None:
+        """Remove tasks matching both title and pet name from the scheduler."""
+        self.tasks = [
+            t for t in self.tasks
+            if not (t.task_title == task_title and t.pet_name == pet_name)
+        ]
+
+    # --- Appointment management ---
+    def add_appointment(self, appointment: Appointment) -> None:
+        """Add an appointment to the scheduler's central appointment list."""
+        self.appointments.append(appointment)
+
+    def delete_appointment(self, title: str, pet_name: str) -> None:
+        """Remove appointments matching both title and pet name from the scheduler."""
+        self.appointments = [
+            a for a in self.appointments
+            if not (a.appointment_title == title and a.pet_name == pet_name)
+        ]
+
+    # --- Scheduling (core logic) ---
+    def build_daily_schedule(self, pet_name: str, target_date: date) -> List[Task]:
+        """Return tasks for a pet on a given day, sorted by priority then time."""
+        pet_tasks = Task.get_task_by_pet(
+            Task.get_task_by_date(self.tasks, target_date), pet_name
+        )
+        return sorted(
+            pet_tasks,
+            key=lambda t: (_PRIORITY_ORDER.get(t.priority, 1), t.scheduled_time),
+        )
+
+    def explain_schedule(self, schedule: List[Task]) -> str:
+        """Return a human-readable summary of a schedule."""
+        if not schedule:
+            return "No tasks scheduled."
+        pet = schedule[0].pet_name
+        lines = [f"Daily schedule for {pet} ({schedule[0].date}):"]
+        for task in schedule:
+            status = "✓" if task.completed else "○"
+            lines.append(
+                f"  {status} {task.scheduled_time.strftime('%H:%M')} "
+                f"[{task.priority.upper()}] {task.task_title} "
+                f"({task.duration_minutes} min) — {task.description}"
+            )
+        return "\n".join(lines)
