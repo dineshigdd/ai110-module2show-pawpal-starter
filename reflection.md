@@ -206,8 +206,7 @@ constaints of the schedular
     - Status Constraints (Lifecycle)
         For example, in methods such as detect_conflicts and create_report, the scheduler distinguishes between completed and pending states. It ignores "Done" tasks when checking for time conflicts, as finished tasks no longer take up "active" time.
 
-- How did you decide which constraints mattered most?
-    I prioritized Temporal and Priority Constraints because they address the two biggest challenges of multi-pet ownership: feasibility (completing tasks successfully) and focus (knowing what matters most).
+- How did you decide which constraints mattered most?I prioritized Temporal and Priority Constraints because they address the two biggest challenges of multi-pet ownership: feasibility (completing tasks successfully) and focus (knowing what matters most).
 
     Priority Constraints matter most becasue this hierarchy ensures that crtical task, such as medication, are prioritized over routine tasks like grooming.
     
