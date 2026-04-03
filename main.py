@@ -177,10 +177,71 @@ print("=" * 45)
 print(scheduler.explain_schedule(schedule))
 print("=" * 45)
 
-# mark morning walk done and re-print
-morning_walk.mark_complete()
+# mark morning walk done using the scheduler and show the next occurrence
+print(f"\nTotal tasks in scheduler before completion: {len(scheduler.tasks)}")
+next_walk = scheduler.mark_task_complete(morning_walk)
+print(f"Total tasks in scheduler after completion:  {len(scheduler.tasks)}")
+
 print("\n[After completing Morning Walk]")
 print(morning_walk.remind_task())
+
+if next_walk:
+    print("\n[Next recurring occurrence auto-created]")
+    print(next_walk.remind_task())
+
+# ---------------------------------------------------------------------------
+# Test: detect_conflicts()
+# ---------------------------------------------------------------------------
+print("\n=== Conflict Detection ===")
+
+# No conflicts yet — check clean state
+conflicts = scheduler.detect_conflicts()
+print(f"Conflicts before adding overlapping task: {len(conflicts)} (expected 0)")
+
+# Add a task that overlaps with Feeding (08:00-08:10): starts at 08:05 for 20 min
+overlapping_task = Task(
+    task_title="Teeth Brushing",
+    description="Brush Mochi's teeth",
+    scheduled_datetime=datetime(today.year, today.month, today.day, 8, 5),
+    duration_minutes=20,
+    priority="medium",
+    frequency="daily",
+    pet_name="Mochi",
+)
+scheduler.add_task(overlapping_task)
+
+conflicts = scheduler.detect_conflicts()
+print(f"Conflicts after adding overlapping task: {len(conflicts)}")
+for warning in conflicts:
+    print(f"  [!] {warning}")
+
+# Add two tasks at the exact same time (12:00) — one for Mochi, one for Luna
+print("\n--- Same-time conflict (different pets) ---")
+luna_feeding = Task(
+    task_title="Luna Feeding",
+    description="Give Luna her wet food",
+    scheduled_datetime=datetime(today.year, today.month, today.day, 12, 0),
+    duration_minutes=10,
+    priority="high",
+    frequency="daily",
+    pet_name="Luna",
+)
+mochi_bath = Task(
+    task_title="Mochi Bath",
+    description="Rinse and dry Mochi",
+    scheduled_datetime=datetime(today.year, today.month, today.day, 12, 0),
+    duration_minutes=30,
+    priority="medium",
+    frequency="weekly",
+    pet_name="Mochi",
+)
+scheduler.add_task(luna_feeding)
+scheduler.add_task(mochi_bath)
+
+conflicts = scheduler.detect_conflicts()
+print(f"Total conflicts detected: {len(conflicts)}")
+for warning in conflicts:
+    print(f"  [!] {warning}")
 
 upcoming = Appointment.get_upcoming(mochi.appointments, from_date=datetime.now())
 print(f"\nUpcoming appointments for {mochi.name}: {len(upcoming)}")

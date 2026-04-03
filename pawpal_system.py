@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import List
 
 _PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
@@ -340,3 +340,69 @@ class Scheduler:
                 f"({task.duration_minutes} min) - {task.description}"
             )
         return "\n".join(lines)
+
+    def mark_task_complete(self, task: Task) -> "Task | None":
+        """Mark a task complete and, for recurring tasks, schedule the next occurrence.
+
+        Returns the newly created Task if the frequency is 'daily' or 'weekly',
+        otherwise returns None.
+        """
+        task.mark_complete()
+
+        if task.frequency == "daily":
+            delta = timedelta(days=1)
+        elif task.frequency == "weekly":
+            delta = timedelta(weeks=1)
+        else:
+            return None
+
+        new_task = Task(
+            task_title=task.task_title,
+            description=task.description,
+            scheduled_datetime=task.scheduled_datetime + delta,
+            pet_name=task.pet_name,
+            duration_minutes=task.duration_minutes,
+            priority=task.priority,
+            frequency=task.frequency,
+            completed=False,
+        )
+
+        self.tasks.append(new_task)
+
+        for pet in self.pets:
+            if pet.name == task.pet_name:
+                pet.tasks.append(new_task)
+                break
+
+        return new_task
+
+    def detect_conflicts(self) -> List[str]:
+        """Check all tasks for time overlaps and return a list of warning messages.
+
+        Two tasks conflict when their time windows overlap:
+            task_a.start < task_b.end  AND  task_b.start < task_a.end
+        Completed tasks are skipped. Returns an empty list if no conflicts found.
+        """
+        warnings = []
+        active = [t for t in self.tasks if not t.completed]
+
+        for i in range(len(active)):
+            for j in range(i + 1, len(active)):
+                a = active[i]
+                b = active[j]
+                a_start = a.scheduled_datetime
+                a_end = a_start + timedelta(minutes=a.duration_minutes)
+                b_start = b.scheduled_datetime
+                b_end = b_start + timedelta(minutes=b.duration_minutes)
+
+                if a_start < b_end and b_start < a_end:
+                    same_pet = a.pet_name == b.pet_name
+                    scope = "same pet" if same_pet else "different pets"
+                    warnings.append(
+                        f"CONFLICT ({scope}): '{a.task_title}' ({a.pet_name}, "
+                        f"{a_start.strftime('%H:%M')}-{a_end.strftime('%H:%M')}) "
+                        f"overlaps with '{b.task_title}' ({b.pet_name}, "
+                        f"{b_start.strftime('%H:%M')}-{b_end.strftime('%H:%M')})"
+                    )
+
+        return warnings
