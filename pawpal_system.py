@@ -333,10 +333,10 @@ class Scheduler:
         pet = schedule[0].pet_name
         lines = [f"Daily schedule for {pet} ({schedule[0].scheduled_datetime.date()}):"]
         for task in schedule:
-            status = "✓" if task.completed else "○"
+            status = "[X]" if task.completed else "[ ]"
             lines.append(
                 f"  {status} {task.scheduled_datetime.strftime('%H:%M')} "
                 f"[{task.priority.upper()}] {task.task_title} "
-                f"({task.duration_minutes} min) — {task.description}"
+                f"({task.duration_minutes} min) - {task.description}"
             )
         return "\n".join(lines)
