@@ -242,12 +242,55 @@ constaints of the schedular
 **a. What you tested**
 
 - What behaviors did you test?
+Following methods of the Scheduler class were tested for their functionalty.  
+
+* **`sort_by_time`**
+    Orders a list of tasks by comparing their "HH:MM" time strings. This provides a daily sequence but ignores date differences, effectively "stacking" tasks from different days if they share the same time.
+
+* **`build_daily_schedule`**
+    Filters the master list for a specific pet and date, then sorts them by weight—first by a predefined priority order and then by the full datetime object. This ensures the most critical care tasks appear at the top of the pet's daily agenda.
+
+
+* **`mark_task_complete`**
+    Updates a task’s status to finished and, if the frequency is "daily" or "weekly," automatically creates and injects a new task instance into the system. It ensures continuity by appending the future occurrence to both the master scheduler and the specific pet's task list.
+
+* **`detect_conflicts`**
+    Iterates through all incomplete tasks to identify time-window overlaps based on start times and durations. It returns detailed warning messages specifying if the scheduling conflict involves the same pet or different animals.
+
+
 - Why were these tests important?
+    The Scheduler is the decision engine of the system, and its methods handle the most important logic in the application. It is essential to have solid test cases because they prove that the math for finding schedule overlaps and creating repeating tasks works correctly every time. These tests make sure the information stays accurate and the schedules are easy to follow. This helps pet owners avoid serious mistakes, such as missing a pet's medication or accidentally booking two tasks at the exact same time.
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
+    While no software is completely bug-free, I am confident that the core functionality of the Scheduler works as expected. I included several edge case tests to ensure that these methods are robust and do not cause the system to crash under unusual conditions. Overall, I would rate my confidence level at a 3 out of 5 . This is becasue while the core features are solid, there is still room to further harden the system against more complex edge cases as described in the section below.
+
+| Method Tested | Test Case Name | Expected Behavior / Logic Verified |
+| :--- | :--- | :--- |
+| **sort_by_time** | `tasks_at_same_time_no_crash` | Handles two tasks at the exact same hour without raising an exception. |
+| **sort_by_time** | `does_not_mutate_original_list` | Confirms that the input list order is unchanged because `sorted()` returns a new list. |
+| **build_daily_schedule** | `unknown_pet_returns_empty` | A pet name with no matching tasks returns an empty list `[]` instead of an error. |
+| **build_daily_schedule** | `includes_completed_tasks` | Ensures completed tasks are not filtered out and still appear in the daily view. |
+| **mark_task_complete** | `daily_chained_twice` | Verifies that completing an auto-created task correctly produces a third occurrence at Day+2. |
+| **mark_task_complete** | `pet_not_in_scheduler_no_crash` | Handles cases where a pet is not registered in the scheduler without crashing. |
+| **detect_conflicts** | `back_to_back_tasks_no_conflict` | Confirms that tasks ending exactly when the next begins are not flagged as conflicts. |
+| **detect_conflicts** | `all_completed_returns_empty` | When all tasks are finished, no active tasks remain and no conflicts are reported. |
+
 - What edge cases would you test next if you had more time?
+    I did not add the follwoing edge cases:    
+
+    * **Midnight Crossover (`sort_by_time`):** Verifying that a task at `00:05` (12:05 AM) correctly sorts before a task at `23:55` (11:55 PM).
+
+    * **Month/Year Rollover (`build_daily_schedule`):** Testing if the scheduler correctly handles the transition from **Dec 31st** to **Jan 1st** without date math errors.
+
+    * **Leap Year Logic (`mark_task_complete`):** Confirming that a "daily" task completed on **Feb 28th** in a leap year correctly schedules the next one for **Feb 29th**.
+
+    * **Nested Tasks (`detect_conflicts`):** Checking if the system catches a short task (5 mins) that occurs entirely *inside* the duration of a much longer task (2 hours).
+
+    * **Zero-Duration Tasks (`detect_conflicts`):** Testing if a task with `0` minutes duration still triggers a conflict if it starts at the exact same time as another task.
+
+    * **Duplicate Pet Names:** Ensuring the scheduler doesn't mix up tasks if two different owners both have a pet named "Buddy."
 
 ---
 
