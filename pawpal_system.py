@@ -147,9 +147,10 @@ class Task:
 @dataclass
 class Pet:
     name: str
-    breed: str
-    dob: date
-    physical_characteristics: str
+    species: str
+    breed: str = ""
+    dob: date = field(default_factory=date.today)
+    physical_characteristics: str = ""
     allergies: List[str] = field(default_factory=list)
     tasks: List[Task] = field(default_factory=list)
     appointments: List[Appointment] = field(default_factory=list)
@@ -223,8 +224,8 @@ class Pet:
 @dataclass
 class Owner:
     name: str
-    email: str
-    phone_number: str
+    email: str=""
+    phone_number: str=""
     pets: List[Pet] = field(default_factory=list)
 
     def get_owner_info(self) -> dict:
