@@ -65,6 +65,7 @@ print("\n=== Pets ===")
 
 mochi = Pet(
     name="Mochi",
+    species="dog",
     breed="Shiba Inu",
     dob=date(2020, 3, 15),
     physical_characteristics="orange coat, curly tail",
@@ -73,6 +74,7 @@ mochi = Pet(
 
 luna = Pet(
     name="Luna",
+    species="cat",
     breed="Domestic Shorthair",
     dob=date(2021, 7, 4),
     physical_characteristics="grey tabby, green eyes",

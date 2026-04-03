@@ -159,6 +159,7 @@ class Pet:
         """Return core pet details and task/appointment counts as a dictionary."""
         return {
             "name": self.name,
+            "species": self.species,
             "breed": self.breed,
             "dob": self.dob,
             "physical_characteristics": self.physical_characteristics,
@@ -199,6 +200,7 @@ class Pet:
         done = [t for t in self.tasks if t.completed]
         lines = [
             f"=== Pet Report: {self.name} ===",
+            f"  Species    : {self.species}",
             f"  Breed      : {self.breed}",
             f"  DOB        : {self.dob}",
             f"  Physical   : {self.physical_characteristics}",

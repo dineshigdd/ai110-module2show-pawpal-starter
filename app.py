@@ -20,6 +20,9 @@ if "appointments" not in st.session_state:
 if "schedule" not in st.session_state:
     st.session_state.schedule = []
 
+if "schedule_summary" not in st.session_state:
+    st.session_state.schedule_summary = ""
+
 st.title("🐾 PawPal+")
 
 st.markdown(
@@ -164,28 +167,70 @@ else:
 
 st.divider()
 
+## Build schedule section (UI only, no logic yet)
 st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+
+sched_col1, sched_col2 = st.columns(2)
+with sched_col1:
+    sched_pet = st.text_input(
+        "Pet name",
+        value=st.session_state.pet["name"] if st.session_state.pet else "",
+        key="sched_pet",
+    )
+with sched_col2:
+    sched_date = st.date_input("Schedule date", value=date.today(), key="sched_date")
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+    if not st.session_state.tasks:
+        st.warning("Add at least one task before generating a schedule.")
+    elif not sched_pet:
+        st.warning("Enter a pet name.")
+    else:
+        pet_species = st.session_state.pet["species"] if st.session_state.pet else "unknown"
+        sched_pet_obj = Pet(name=sched_pet, species=pet_species)
+        owner_name = st.session_state.owner["name"] if st.session_state.owner else "Owner"
+        sched_owner = Owner(name=owner_name, pets=[sched_pet_obj])
 
-## Schedule output section (UI only, no logic yet)
+        scheduler = Scheduler()
+        scheduler.add_owner(sched_owner)
+        scheduler.add_pet(sched_pet_obj)
+
+        slot_hour, slot_min = 8, 0
+        for task_dict in st.session_state.tasks:
+            t = Task(
+                task_title=task_dict["task_title"],
+                description="",
+                date=sched_date,
+                scheduled_time=time(slot_hour, slot_min),
+                duration_minutes=task_dict["duration_minutes"],
+                priority=task_dict["priority"],
+                pet_name=sched_pet,
+            )
+            scheduler.add_task(t)
+            total = slot_hour * 60 + slot_min + task_dict["duration_minutes"]
+            slot_hour, slot_min = total // 60, total % 60
+
+        for appt_dict in st.session_state.appointments:
+            if appt_dict["pet"] in (sched_pet, ""):
+                scheduler.add_appointment(Appointment(
+                    appointment_title=appt_dict["title"],
+                    appointment_date_time=appt_dict["datetime"],
+                    place=appt_dict["place"],
+                    appointment_person=appt_dict["person"],
+                    pet_name=sched_pet,
+                    notes=appt_dict["notes"],
+                ))
+
+        schedule = scheduler.build_daily_schedule(pet_name=sched_pet, target_date=sched_date)
+        st.session_state.schedule = [t.get_task() for t in schedule]
+        st.session_state.schedule_summary = scheduler.explain_schedule(schedule)
+        st.success(f"Schedule generated for {sched_pet} on {sched_date}!")
+
+## Schedule output section
 st.markdown("### Today's Schedule")
-st.caption("Once you have scheduling logic, display the generated schedule here.")
 
 if st.session_state.schedule:
+    st.text(st.session_state.get("schedule_summary", ""))
     st.table(st.session_state.schedule)
 else:
-    st.info("Schedule will appear here after you implement the scheduling logic and connect it to this app.")
+    st.info("Schedule will appear here once generated.")
