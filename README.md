@@ -57,3 +57,32 @@ Unlike basic schedulers that only check for exact time matches, PawPal+ uses **I
 
 #### Strategic Priority & Temporal Constraints
 I prioritized **Temporal and Priority Constraints** because they address the two biggest challenges of multi-pet ownership: **operational feasibility** and **triage focus**. By implementing a weighted sorting system, the scheduler ensures that **high-acuity care** (like medication) is never **obscured** by **standard maintenance workflows** (like grooming).
+
+---
+## Final UML Class Diagram
+
+![UML Class Diagram](course_images/uml_final.png)
+
+## Features
+
+**1. Sort Tasks by Time (`sort_by_time`)**
+Sorts any list of tasks into chronological order using Python's built-in `sorted()` function. Each task's `scheduled_datetime` is formatted as an `HH:MM` string and used as the sort key, ordering tasks from earliest to latest within a 24-hour window. Returns a new sorted list without modifying the original.
+
+---
+
+**2. Mark Task Complete (`mark_task_complete`)**
+Marks a task as completed and automatically handles recurring tasks. If the task's frequency is `daily` or `weekly`, the scheduler computes the next occurrence by adding a 1-day or 7-day `timedelta` to the original scheduled time, creates a new identical task at that future time, and appends it to both the scheduler's task list and the owning pet's task list. One-time (`once`) tasks are simply marked done and no new task is created.
+
+---
+
+**3. Detect Conflicts (`detect_conflicts`)**
+Uses a pairwise comparison algorithm (O(n²)) to check every combination of active (non-completed) tasks for time overlaps. For each pair, it computes each task's start and end time (start + duration), then applies the standard interval-overlap condition: `task_a.start < task_b.end AND task_b.start < task_a.end`. When an overlap is found, it generates a warning message identifying both tasks, their pet names, and their time windows, and notes whether the conflict is between tasks for the same pet or different pets.
+
+---
+
+**4. Build Daily Schedule (`build_daily_schedule`)**
+Filters the scheduler's task list down to tasks matching a specific pet name and target date, then sorts the result using a two-level composite key: **priority first** (high → medium → low, mapped to integers 0, 1, 2 via `_PRIORITY_ORDER`), then **scheduled time** as a tiebreaker. This ensures the most critical tasks always appear first within the day's plan, with earlier times breaking ties between tasks of equal priority.
+
+## Demo Screenshot
+
+![App Screenshot](course_images/screenshot.png)
