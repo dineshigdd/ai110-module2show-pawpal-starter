@@ -230,12 +230,19 @@ constaints of the schedular
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
+I utilized AI across many aspects of this project. While I used it to clarify confusing concepts and learn the technologies involved, my primary use cases were code generation and debugging. I made a conscious effort to use AI in small increments, ensuring I maintained a solid understanding of all generated code. I have learned from previous experience that using AI tools blindly can actually hinder productivity; without a firm grasp of the generated logic, it becomes difficult to identify the root cause of an issue.
+
+The quality of AI prompts depends heavily on how well you understand the codebase, the project scope, and the user requirements. When you identify the root cause of an error yourself, you can provide much more specific prompts. The more precise the prompt, the better the outcome produced by the AI.
+
+In some instances, I intentionally rejected suggestions made by the AI. For example, I was surprised when Claude suggested adding a sorting algorithm directly into app.py, even though that logic belonged in pawpal_system.py. Ultimately, when paired with a strong understanding of the codebase and project scope, AI tools are immensely helpful for boosting productivity.
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+As I mentioned previously, I rejected suggestions like adding a sorting algorithm directly into app.py. Throughout this project, I utilized AI to add code in small, manageable increments. Often, I would implement a piece of code myself and then ask the AI to refine it or suggest specific changes; conversely, I would also manually modify code that the AI generated to better fit the project's needs. Because of this iterative approach, the frequency of rejecting AI suggestions remained low, as the tool was consistently working within the specific context and constraints I established.
 
+- How did you evaluate or verify what the AI suggested?
+Often I tested the AI generated code many times. I make sure to read what AI suggestion are before I made any changes. Another technique I used is to verify the AI generated answer with another AI model such as Gemini. 
 ---
 
 ## 4. Testing and Verification
@@ -300,11 +307,14 @@ Following methods of the Scheduler class were tested for their functionalty.
 **a. What went well**
 
 - What part of this project are you most satisfied with?
+This project is helpful for me to think more like an architect and to use more refined AI prompts. I think this is the aspect of the project that I am most satisfied with. I was able to focus on high-level design tasks rather than low-level tasks, such as coding
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
+I will refine the class diagram. I would spent more time in designing realtioship between classes. I also would spent more time redesigning the UI componenst of the system
 
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+As engineers, developers, or builders, we need to practice high-level system design thinking. We often put so much effort into the implementation stage of the software development process while ignoring the time and effort needed to build high-level system design skills. I believe that from the early stages of our careers, it is critical to put more effort into system design. AI is a great asset in helping this process, both by taking the burden of implementation to a reasonable level and by supporting the learning of system design knowledge.

@@ -365,7 +365,7 @@ class Scheduler:
             duration_minutes=task.duration_minutes,
             priority=task.priority,
             frequency=task.frequency,
-            completed=False,
+            completed=False
         )
 
         self.tasks.append(new_task)

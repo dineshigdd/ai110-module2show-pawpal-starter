@@ -216,6 +216,10 @@ if cur["tasks"]:
                 new_task = scheduler.mark_task_complete(t)
                 if new_task:
                     cur["tasks"].append(new_task)
+                # Sync completed status into the schedule snapshot
+                for sched_task in st.session_state.schedule:
+                    if sched_task["title"] == t.task_title:
+                        sched_task["completed"] = True
                 st.rerun()
         else:
             col_chk.write("✅")
@@ -300,6 +304,8 @@ if st.button("Generate schedule"):
                 duration_minutes=t.duration_minutes,
                 priority=t.priority,
                 pet_name=sched_pet,
+                frequency=t.frequency,
+                completed=t.completed,
             )
             scheduler.add_task(task)
             total = slot_hour * 60 + slot_min + t.duration_minutes
@@ -326,6 +332,17 @@ st.markdown("### Today's Schedule")
 
 if st.session_state.schedule:
     st.text(st.session_state.get("schedule_summary", ""))
-    st.table(st.session_state.schedule)
+    schedule_display = []
+    for t in st.session_state.schedule:
+        schedule_display.append({
+            "Title": t["title"],
+            "Time": t["datetime"].strftime("%H:%M") if hasattr(t["datetime"], "strftime") else t["datetime"],
+            "Pet": t["pet"],
+            "Duration(min)": t["duration_minutes"],
+            "Priority": t["priority"],
+            "Frequency": t["frequency"],
+            "Status": "Completed" if t["completed"] else "",
+        })
+    st.table(schedule_display)
 else:
     st.info("Schedule will appear here once generated.")

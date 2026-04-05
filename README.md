@@ -86,3 +86,6 @@ Filters the scheduler's task list down to tasks matching a specific pet name and
 ## Demo Screenshot
 
 ![App Screenshot](course_images/screenshot.png)
+![App Screenshot](course_images/conflict_detection.png)
+![App Screenshot](course_images/schedule.png)
+
